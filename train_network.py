@@ -29,7 +29,7 @@ train_gen = tf.keras.preprocessing.image_dataset_from_directory(
 )
 
 test_gen = tf.keras.preprocessing.image_dataset_from_directory(
-  train_path,
+  test_path,
   validation_split=0.2,
   color_mode="grayscale",
   batch_size=32,
@@ -53,6 +53,7 @@ model = tf.keras.Sequential([
   layers.Dense(2)
 ])
 
+
 model.compile(
   optimizer='adam',
   loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -64,4 +65,4 @@ history = model.fit(
   epochs=3
 )
 
-model.save('my_model.h5')
+model.save('my_model')
