@@ -17,3 +17,4 @@ from tensorflow.keras.utils import to_categorical
 train_path = '../../chest_xray/train'
 test_path = '../../chest_xray/test'
 
+fdgdf
