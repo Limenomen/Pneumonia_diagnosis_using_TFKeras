@@ -14,7 +14,7 @@ train_path = '../../chest_xray/train'
 test_path = '../../chest_xray/test'
 val_path = '../../chest_xray/val'
 labels = ['Pneumonia', 'Normal']
-
+оро
 
 def get_images_data(dir):
     img_size = 150
