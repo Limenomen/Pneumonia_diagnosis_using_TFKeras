@@ -13,6 +13,7 @@ from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
+epochs_count = 25
 
 def get_images_data(dir):
     img_size = 150
@@ -38,7 +39,7 @@ def get_images_data(dir):
 
 
 def graphics():
-    epochs = [i for i in range(12)]
+    epochs = [i for i in range(epochs_count)]
     fig, ax = plt.subplots(1, 2)
     train_acc = history.history['accuracy']
     train_loss = history.history['loss']
@@ -124,7 +125,7 @@ model.compile(loss="binary_crossentropy",
 learning_rate_reduction = ReduceLROnPlateau(
     monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
 
-history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=12,
+history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
                     validation_data=datagen.flow(x_val, y_val), callbacks=[learning_rate_reduction])
 
 
