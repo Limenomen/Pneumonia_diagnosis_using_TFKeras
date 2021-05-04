@@ -13,7 +13,7 @@ from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-epochs_count = 25
+epochs_count = 10
 
 def get_images_data(dir):
     img_size = 150
@@ -120,7 +120,7 @@ model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
 model.compile(loss="binary_crossentropy",
-              optimizer="rmsprop", metrics=["accuracy"])
+              optimizer="adam", metrics=["accuracy"])
 
 learning_rate_reduction = ReduceLROnPlateau(
     monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
