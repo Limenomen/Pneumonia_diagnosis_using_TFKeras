@@ -13,6 +13,8 @@ from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
+epochs_count = 10
+
 
 def get_images_data(dir):
     img_size = 150
@@ -38,7 +40,7 @@ def get_images_data(dir):
 
 
 def graphics():
-    epochs = [i for i in range(12)]
+    epochs = [i for i in range(epochs_count)]
     fig, ax = plt.subplots(1, 2)
     train_acc = history.history['accuracy']
     train_loss = history.history['loss']
@@ -87,11 +89,14 @@ datagen = ImageDataGenerator(
     featurewise_std_normalization=False,  # divide inputs by std of the dataset
     samplewise_std_normalization=False,  # divide each input by its std
     zca_whitening=False,  # apply ZCA whitening
-    rotation_range = 30,  # randomly rotate images in the range (degrees, 0 to 180)
-    zoom_range = 0.2, # Randomly zoom image 
-    width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-    height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-    horizontal_flip = True,  # randomly flip images
+    # randomly rotate images in the range (degrees, 0 to 180)
+    rotation_range=30,
+    zoom_range=0.2,  # Randomly zoom image
+    # randomly shift images horizontally (fraction of total width)
+    width_shift_range=0.1,
+    # randomly shift images vertically (fraction of total height)
+    height_shift_range=0.1,
+    horizontal_flip=True,  # randomly flip images
     vertical_flip=False)  # randomly flip images
 
 
@@ -99,32 +104,48 @@ datagen.fit(x_train)
 
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(32, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32 , (3,3) , strides = 1 , padding = 'same' , activation = 'relu' , input_shape = (150,150,1)))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2,2) , strides = 2 , padding = 'same'))
 
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-#what
+model.add(Conv2D(64 , (3,3) , strides = 1 , padding = 'same' , activation = 'relu'))
+model.add(Dropout(0.1))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2,2) , strides = 2 , padding = 'same'))
+
+model.add(Conv2D(64 , (3,3) , strides = 1 , padding = 'same' , activation = 'relu'))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2,2) , strides = 2 , padding = 'same'))
+
+model.add(Conv2D(128 , (3,3) , strides = 1 , padding = 'same' , activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2,2) , strides = 2 , padding = 'same'))
+
+model.add(Conv2D(256 , (3,3) , strides = 1 , padding = 'same' , activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2,2) , strides = 2 , padding = 'same'))
+
 model.add(Flatten())
-model.add(Dense(64))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
+model.add(Dense(units = 128 , activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(Dense(units = 1 , activation = 'sigmoid'))
+model.compile(optimizer = "adam" , loss = 'binary_crossentropy' , metrics = ['accuracy'])
+model.summary()
 
-model.compile(loss="binary_crossentropy",
-              optimizer="rmsprop", metrics=["accuracy"])
-
+"""
+earlystopping = EarlyStopping(monitor='val_loss',
+                              mode='min',
+                              patience=3,
+                              verbose=1)
+                              """
 learning_rate_reduction = ReduceLROnPlateau(
     monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
 
-history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=12,
+
+history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
                     validation_data=datagen.flow(x_val, y_val), callbacks=[learning_rate_reduction])
 
 
