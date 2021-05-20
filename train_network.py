@@ -132,7 +132,7 @@ model.add(Flatten())
 model.add(Dense(units = 128 , activation = 'relu'))
 model.add(Dropout(0.2))
 model.add(Dense(units = 1 , activation = 'sigmoid'))
-model.compile(optimizer = "adam" , loss = 'binary_crossentropy' , metrics = ['accuracy'])
+model.compile(optimizer = "rmsprop" , loss = 'binary_crossentropy' , metrics = ['accuracy'])
 model.summary()
 
 """
@@ -140,9 +140,9 @@ earlystopping = EarlyStopping(monitor='val_loss',
                               mode='min',
                               patience=3,
                               verbose=1)
-                              """
+"""
 learning_rate_reduction = ReduceLROnPlateau(
-    monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
+    monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.00001)
 
 
 history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
