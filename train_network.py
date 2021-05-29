@@ -1,6 +1,8 @@
+from re import L
 import tensorflow as tf
 import numpy as np
 from cv2 import cv2
+import random
 import os
 import PIL
 from tensorflow import keras
@@ -13,10 +15,11 @@ from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-epochs_count = 16
+epochs_count = 15
 
 
 def get_images_data(dir):
+    labels = ['Pneumonia', 'Normal']
     img_size = 150
     data = []
     x_arr = []
@@ -39,29 +42,21 @@ def get_images_data(dir):
     return(data, x_arr, y_arr)
 
 
+def samples(pic_count, data):
+
+    for i in range(pic_count):
+        image = random.choice(data)
+        plt.subplot(3, 3, i + 1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.imshow(image[0], cmap="gray", interpolation='none')
+        plt.title("{}".format(image[1]))
+        plt.tight_layout()
+    # plt.show()
+
+
 def graphics():
-    epochs = [i for i in range(epochs_count)]
-    fig, ax = plt.subplots(1, 2)
-    train_acc = history.history['accuracy']
-    train_loss = history.history['loss']
-    val_acc = history.history['val_accuracy']
-    val_loss = history.history['val_loss']
-    fig.set_size_inches(20, 10)
 
-    ax[0].plot(epochs, train_acc, 'go-', label='точность на тренировочной выборке')
-    ax[0].plot(epochs, val_acc, 'ro-', label='точность на валидационной выборке')
-    ax[0].set_title('Точность на тренеровочной и валидационной выборке')
-    ax[0].legend()
-    ax[0].set_xlabel("эпоха")
-    ax[0].set_ylabel("точность")
-
-    ax[1].plot(epochs, train_loss, 'g-o', label='потери на тренировочной выборке')
-    ax[1].plot(epochs, val_loss, 'r-o', label='потери на валидационной выборке')
-    ax[1].set_title('точность и потери на тестовой выборке')
-    ax[1].legend()
-    ax[1].set_xlabel("эпоха")
-    ax[1].set_ylabel("потери")
-    plt.show()
     l = []
     for i in train:
         if(i[1] == 0):
@@ -71,18 +66,45 @@ def graphics():
     sns.set_style('darkgrid')
     sns.countplot(l)
 
+    epochs = [i for i in range(epochs_count)]
+    fig, ax = plt.subplots(1, 2)
+    train_acc = history.history['accuracy']
+    train_loss = history.history['loss']
+    val_acc = history.history['val_accuracy']
+    val_loss = history.history['val_loss']
+    fig.set_size_inches(20, 10)
+
+    ax[0].plot(epochs, train_acc, 'go-',
+               label='точность на тренировочной выборке')
+    ax[0].plot(epochs, val_acc, 'ro-',
+               label='точность на валидационной выборке')
+    ax[0].set_title('Точность')
+    ax[0].legend()
+    ax[0].set_xlabel("эпоха")
+    ax[0].set_ylabel("точность")
+
+    ax[1].plot(epochs, train_loss, 'g-o',
+               label='потери на тренировочной выборке')
+    ax[1].plot(epochs, val_loss, 'r-o',
+               label='потери на валидационной выборке')
+    ax[1].set_title('потери')
+    ax[1].legend()
+    ax[1].set_xlabel("эпоха")
+    ax[1].set_ylabel("потери")
+    plt.show()
+    
+
 
 #'Путь, где находятся изображения для датасета'
 train_path = '../../chest_xray/train'
 test_path = '../../chest_xray/test'
 val_path = '../../chest_xray/val'
 
-labels = ['Pneumonia', 'Normal']
 
 val, x_val, y_val = get_images_data(val_path)
 train, x_train, y_train = get_images_data(train_path)
 test, x_test, y_test = get_images_data(test_path)
-
+#samples(9, test)
 datagen = ImageDataGenerator(
     featurewise_center=False,  # set input mean to 0 over the dataset
     samplewise_center=False,  # set each sample mean to 0
@@ -135,7 +157,7 @@ model.add(Dropout(0.2))
 model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer="adam", loss='binary_crossentropy',
               metrics=['accuracy'])
-model.summary()
+# model.summary()
 
 earlystopping = EarlyStopping(monitor='val_loss',
                               mode='min',
@@ -143,13 +165,16 @@ earlystopping = EarlyStopping(monitor='val_loss',
                               verbose=1)
 
 learning_rate_reduction = ReduceLROnPlateau(
-    monitor='val_accuracy', patience=3, verbose=1, factor=0.3, min_lr=0.00001)
+    monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
 
 history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
                     validation_data=datagen.flow(x_val, y_val), callbacks=[learning_rate_reduction])
 
-print("Loss of the model is - ", model.evaluate(x_test, y_test)[0])
-print("Accuracy of the model is - ",
-      model.evaluate(x_test, y_test)[1]*100, "%")
 
+evaluate = model.evaluate(x_test, y_test)
+
+print("Loss of the model is - ", evaluate[0])
+print("Accuracy of the model is - ",
+      evaluate[1]*100, "%")
+model.save('my_model.h5')
 graphics()
