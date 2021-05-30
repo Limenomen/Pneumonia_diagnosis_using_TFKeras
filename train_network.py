@@ -15,7 +15,7 @@ from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-epochs_count = 15
+epochs_count = 13
 
 
 def get_images_data(dir):
@@ -92,7 +92,6 @@ def graphics():
     ax[1].set_xlabel("эпоха")
     ax[1].set_ylabel("потери")
     plt.show()
-    
 
 
 #'Путь, где находятся изображения для датасета'
@@ -126,18 +125,16 @@ datagen.fit(x_train)
 
 
 model = Sequential()
-
-model.add(Conv2D(32, (3, 3), strides=1, padding='same',
-                 activation='relu', input_shape=(150, 150, 1)))
-model.add(MaxPool2D((2, 2), strides=2, padding='same'))
-
-model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
-model.add(Dropout(0.2))
+model.add(Conv2D(32, (3, 3), strides=1, padding='same', activation='relu', input_shape=(150, 150, 1)))
 model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
-model.add(Dropout(0.2))
+model.add(Dropout(0.1))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
+
+model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
 model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
