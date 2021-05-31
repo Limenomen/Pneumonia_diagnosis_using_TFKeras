@@ -1,17 +1,12 @@
-from re import L
-import tensorflow as tf
 import numpy as np
 from cv2 import cv2
 import random
 import os
-import PIL
-from tensorflow import keras
 import matplotlib.pyplot as plt
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.layers import Flatten, Conv2D, Activation, Dense, Dropout, MaxPooling2D
 from keras.preprocessing.image import ImageDataGenerator
-from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
@@ -42,17 +37,7 @@ def get_images_data(dir):
     return(data, x_arr, y_arr)
 
 
-def samples(pic_count, data):
 
-    for i in range(pic_count):
-        image = random.choice(data)
-        plt.subplot(3, 3, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.imshow(image[0], cmap="gray", interpolation='none')
-        plt.title("{}".format(image[1]))
-        plt.tight_layout()
-    # plt.show()
 
 
 def graphics():
@@ -72,7 +57,7 @@ def graphics():
     train_loss = history.history['loss']
     val_acc = history.history['val_accuracy']
     val_loss = history.history['val_loss']
-    fig.set_size_inches(20, 10)
+    fig.set_size_inches(2, 1)
 
     ax[0].plot(epochs, train_acc, 'go-',
                label='точность на тренировочной выборке')
@@ -103,7 +88,8 @@ val_path = '../../chest_xray/val'
 val, x_val, y_val = get_images_data(val_path)
 train, x_train, y_train = get_images_data(train_path)
 test, x_test, y_test = get_images_data(test_path)
-#samples(9, test)
+
+
 datagen = ImageDataGenerator(
     featurewise_center=False,  # set input mean to 0 over the dataset
     samplewise_center=False,  # set each sample mean to 0
@@ -119,8 +105,6 @@ datagen = ImageDataGenerator(
     height_shift_range=0.1,
     horizontal_flip=True,  # randomly flip images
     vertical_flip=False)  # randomly flip images
-
-
 datagen.fit(x_train)
 
 
@@ -169,9 +153,9 @@ history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs
 
 
 evaluate = model.evaluate(x_test, y_test)
-
 print("Loss of the model is - ", evaluate[0])
 print("Accuracy of the model is - ",
       evaluate[1]*100, "%")
-model.save('my_model.h5')
+if (evaluate[1]*100 > 91):
+    model.save('my_model.h5')
 graphics()
