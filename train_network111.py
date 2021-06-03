@@ -1,17 +1,12 @@
-from re import L
-import tensorflow as tf
 import numpy as np
 from cv2 import cv2
 import random
 import os
-import PIL
-from tensorflow import keras
 import matplotlib.pyplot as plt
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.layers import Flatten, Conv2D, Activation, Dense, Dropout, MaxPooling2D
 from keras.preprocessing.image import ImageDataGenerator
-from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
@@ -42,19 +37,6 @@ def get_images_data(dir):
     return(data, x_arr, y_arr)
 
 
-def samples(pic_count, data):
-
-    for i in range(pic_count):
-        image = random.choice(data)
-        plt.subplot(3, 3, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.imshow(image[0], cmap="gray", interpolation='none')
-        plt.title("{}".format(image[1]))
-        plt.tight_layout()
-    # plt.show()
-
-
 def graphics():
 
     l = []
@@ -72,7 +54,7 @@ def graphics():
     train_loss = history.history['loss']
     val_acc = history.history['val_accuracy']
     val_loss = history.history['val_loss']
-    fig.set_size_inches(20, 10)
+    fig.set_size_inches(2, 1)
 
     ax[0].plot(epochs, train_acc, 'go-',
                label='точность на тренировочной выборке')
@@ -103,49 +85,33 @@ val_path = '../../chest_xray/val'
 val, x_val, y_val = get_images_data(val_path)
 train, x_train, y_train = get_images_data(train_path)
 test, x_test, y_test = get_images_data(test_path)
-#samples(9, test)
+
+
 datagen = ImageDataGenerator(
-    featurewise_center=False,  # set input mean to 0 over the dataset
-    samplewise_center=False,  # set each sample mean to 0
-    featurewise_std_normalization=False,  # divide inputs by std of the dataset
-    samplewise_std_normalization=False,  # divide each input by its std
-    zca_whitening=False,  # apply ZCA whitening
-    # randomly rotate images in the range (degrees, 0 to 180)
     rotation_range=30,
-    zoom_range=0.2,  # Randomly zoom image
-    # randomly shift images horizontally (fraction of total width)
+    zoom_range=0.2,  
     width_shift_range=0.1,
-    # randomly shift images vertically (fraction of total height)
     height_shift_range=0.1,
-    horizontal_flip=True,  # randomly flip images
-    vertical_flip=False)  # randomly flip images
-
-
+    horizontal_flip=True,  
+    vertical_flip=False)  
 datagen.fit(x_train)
 
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), strides=1, padding='same', activation='relu', input_shape=(150, 150, 1)))
-model.add(BatchNormalization())
+model.add(Conv2D(32, (3, 3), strides=1, padding='same',
+                 activation='relu', input_shape=(150, 150, 1)))
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
 model.add(Dropout(0.1))
-model.add(BatchNormalization())
-model.add(MaxPool2D((2, 2), strides=2, padding='same'))
-
-model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
-model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Conv2D(128, (3, 3), strides=1, padding='same', activation='relu'))
 model.add(Dropout(0.2))
-model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Conv2D(256, (3, 3), strides=1, padding='same', activation='relu'))
 model.add(Dropout(0.2))
-model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Flatten())
@@ -162,16 +128,16 @@ earlystopping = EarlyStopping(monitor='val_loss',
                               verbose=1)
 
 learning_rate_reduction = ReduceLROnPlateau(
-    monitor='val_accuracy', patience=2, verbose=1, factor=0.4, min_lr=0.000001)
+    monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
 
 history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
                     validation_data=datagen.flow(x_val, y_val), callbacks=[learning_rate_reduction])
 
 
 evaluate = model.evaluate(x_test, y_test)
-
 print("Loss of the model is - ", evaluate[0])
 print("Accuracy of the model is - ",
       evaluate[1]*100, "%")
-model.save('my_model.h5')
+if (evaluate[1]*100 > 91):
+    model.save('my_modddel.h5')
 graphics()

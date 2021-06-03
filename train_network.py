@@ -14,7 +14,7 @@ epochs_count = 13
 
 
 def get_images_data(dir):
-    labels = ['Pneumonia', 'Normal']
+    labels = ['Пневмония', 'Норма']
     img_size = 150
     data = []
     x_arr = []
@@ -37,17 +37,14 @@ def get_images_data(dir):
     return(data, x_arr, y_arr)
 
 
-
-
-
 def graphics():
 
     l = []
     for i in train:
         if(i[1] == 0):
-            l.append("Pneumonia")
+            l.append("Пневмония")
         else:
-            l.append("Normal")
+            l.append("Норма")
     sns.set_style('darkgrid')
     sns.countplot(l)
 
@@ -91,25 +88,18 @@ test, x_test, y_test = get_images_data(test_path)
 
 
 datagen = ImageDataGenerator(
-    featurewise_center=False,  # set input mean to 0 over the dataset
-    samplewise_center=False,  # set each sample mean to 0
-    featurewise_std_normalization=False,  # divide inputs by std of the dataset
-    samplewise_std_normalization=False,  # divide each input by its std
-    zca_whitening=False,  # apply ZCA whitening
-    # randomly rotate images in the range (degrees, 0 to 180)
     rotation_range=30,
-    zoom_range=0.2,  # Randomly zoom image
-    # randomly shift images horizontally (fraction of total width)
+    zoom_range=0.2,  
     width_shift_range=0.1,
-    # randomly shift images vertically (fraction of total height)
     height_shift_range=0.1,
-    horizontal_flip=True,  # randomly flip images
-    vertical_flip=False)  # randomly flip images
+    horizontal_flip=True,  
+    vertical_flip=False)  
 datagen.fit(x_train)
 
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), strides=1, padding='same', activation='relu', input_shape=(150, 150, 1)))
+model.add(Conv2D(32, (3, 3), strides=1, padding='same',
+                 activation='relu', input_shape=(150, 150, 1)))
 model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
