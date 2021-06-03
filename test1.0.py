@@ -105,15 +105,14 @@ model.compile(optimizer="adam", loss='binary_crossentropy',
               metrics=['accuracy'])
 model.summary()
 evaluate = model.evaluate(x_test, y_test)
-print("Loss of the model is - ", evaluate[0])
-print("Accuracy of the model is - ",
+print("Точность - ",
       evaluate[1]*100, "%")
 
 
 predictions = model.predict_classes(x_test)
 predictions = predictions.reshape(1, -1)[0]
 y_pred = Change_Class_Name(predictions)
-y_testc = [x[1] for x in test]
-Confusion_Matrix(y_pred, y_testc)
+y_true = [x[1] for x in test]
+Confusion_Matrix(y_pred, y_true)
 Samples(test)
 Predict_Images(y_pred, test)

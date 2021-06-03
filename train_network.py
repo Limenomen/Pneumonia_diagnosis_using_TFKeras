@@ -14,33 +14,39 @@ epochs_count = 13
 
 
 def get_images_data(dir):
-    labels = ['Пневмония', 'Норма']
+    #метки классов
+    labels = ['PNEUMONIA', 'NORMAL']
+    #размер выходного изображения
     img_size = 150
     data = []
     x_arr = []
     y_arr = []
+    #проход по текущей директории
     for label in labels:
+        #путь, где находится текущее изображение
         path = os.path.join(dir, label)
+        #индекс класса
         class_num = labels.index(label)
+        #выбираем изображения, которые лежат в директории, соответствующей данному классу
         for img_path in os.listdir(path):
+            #считывание изображения
             img = cv2.imread(os.path.join(path, img_path),
                              cv2.IMREAD_GRAYSCALE)
+            #изменение размера изображения
             resized_img = cv2.resize(img, (img_size, img_size))
-            data.append([resized_img, class_num])
-    for img, label in data:
-        x_arr.append(img)
-        y_arr.append(label)
+            x_arr.append(resized_img)
+            y_arr.append(class_num)
+    #преобразование в numpy array, нормализация
     x_arr = np.array(x_arr) / 255
     y_arr = np.array(y_arr)
     x_arr = x_arr.reshape(-1, img_size, img_size, 1)
-
-    return(data, x_arr, y_arr)
+    return(x_arr, y_arr)
 
 
 def graphics():
 
     l = []
-    for i in train:
+    for i in y_train:
         if(i[1] == 0):
             l.append("Пневмония")
         else:
@@ -82,18 +88,22 @@ test_path = '../../chest_xray/test'
 val_path = '../../chest_xray/val'
 
 
-val, x_val, y_val = get_images_data(val_path)
-train, x_train, y_train = get_images_data(train_path)
-test, x_test, y_test = get_images_data(test_path)
+x_val, y_val = get_images_data(val_path)
+x_train, y_train = get_images_data(train_path)
+x_test, y_test = get_images_data(test_path)
 
 
 datagen = ImageDataGenerator(
+    #случайный поворот изображения
     rotation_range=30,
-    zoom_range=0.2,  
+    #случайное приближение 
+    zoom_range=0.2, 
+    #смещение по горизонтали 
     width_shift_range=0.1,
+    #смещение по вертикали
     height_shift_range=0.1,
-    horizontal_flip=True,  
-    vertical_flip=False)  
+    #отражение по горизонтали
+    horizontal_flip=True)  
 datagen.fit(x_train)
 
 
@@ -143,8 +153,8 @@ history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs
 
 
 evaluate = model.evaluate(x_test, y_test)
-print("Loss of the model is - ", evaluate[0])
-print("Accuracy of the model is - ",
+
+print("точность - ",
       evaluate[1]*100, "%")
 if (evaluate[1]*100 > 91):
     model.save('my_model.h5')

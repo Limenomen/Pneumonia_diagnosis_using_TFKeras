@@ -120,7 +120,7 @@ model.add(Dropout(0.2))
 model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer="adam", loss='binary_crossentropy',
               metrics=['accuracy'])
-# model.summary()
+model.summary()
 
 earlystopping = EarlyStopping(monitor='val_loss',
                               mode='min',
