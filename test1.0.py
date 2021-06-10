@@ -9,7 +9,7 @@ import keras
 import matplotlib.pyplot as plt
 from keras.models import load_model
 import seaborn as sns
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 
 params = {'legend.fontsize': 'small',
           'figure.figsize': (15, 10),
@@ -18,6 +18,7 @@ params = {'legend.fontsize': 'small',
           'xtick.labelsize': 'small',
           'ytick.labelsize': 'small'}
 plt.rcParams.update(params)
+
 
 def Get_Images_Data(dir):
     labels = ['PNEUMONIA', 'NORMAL']
@@ -89,13 +90,14 @@ def Change_Class_Name(data):
 
 
 def Confusion_Matrix(predictions, Test):
-    labels=['Пневмония', 'Норма']
+    labels = ['Пневмония', 'Норма']
     m = confusion_matrix(Test, predictions, labels=labels)
     print(m)
     plt.figure(figsize=(10, 10))
     sns.heatmap(m, cmap="Blues", linecolor='black', linewidth=1,
                 annot=True, fmt='', xticklabels=labels, yticklabels=labels)
     plt.show()
+
 
 test_path = '../../chest_xray/test'
 test, x_test, y_test = Get_Images_Data(test_path)
@@ -111,6 +113,8 @@ print("Точность - ",
 
 predictions = model.predict_classes(x_test)
 predictions = predictions.reshape(1, -1)[0]
+print(classification_report(y_test, predictions, target_names=[
+      'Пневмония', 'Норма']))
 y_pred = Change_Class_Name(predictions)
 y_true = [x[1] for x in test]
 Confusion_Matrix(y_pred, y_true)
