@@ -1,17 +1,12 @@
-from re import L
-import tensorflow as tf
 import numpy as np
 from cv2 import cv2
 import random
 import os
-import PIL
-from tensorflow import keras
 import matplotlib.pyplot as plt
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.layers import Flatten, Conv2D, Activation, Dense, Dropout, MaxPooling2D
 from keras.preprocessing.image import ImageDataGenerator
-from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
@@ -19,50 +14,43 @@ epochs_count = 13
 
 
 def get_images_data(dir):
-    labels = ['Pneumonia', 'Normal']
+    #метки классов
+    labels = ['PNEUMONIA', 'NORMAL']
+    #размер выходного изображения
     img_size = 150
     data = []
     x_arr = []
     y_arr = []
+    #проход по текущей директории
     for label in labels:
+        #путь, где находится текущее изображение
         path = os.path.join(dir, label)
+        #индекс класса
         class_num = labels.index(label)
+        #выбираем изображения, которые лежат в директории, соответствующей данному классу
         for img_path in os.listdir(path):
+            #считывание изображения
             img = cv2.imread(os.path.join(path, img_path),
                              cv2.IMREAD_GRAYSCALE)
+            #изменение размера изображения
             resized_img = cv2.resize(img, (img_size, img_size))
-            data.append([resized_img, class_num])
-    for img, label in data:
-        x_arr.append(img)
-        y_arr.append(label)
+            x_arr.append(resized_img)
+            y_arr.append(class_num)
+    #преобразование в numpy array, нормализация
     x_arr = np.array(x_arr) / 255
     y_arr = np.array(y_arr)
     x_arr = x_arr.reshape(-1, img_size, img_size, 1)
-
-    return(data, x_arr, y_arr)
-
-
-def samples(pic_count, data):
-
-    for i in range(pic_count):
-        image = random.choice(data)
-        plt.subplot(3, 3, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.imshow(image[0], cmap="gray", interpolation='none')
-        plt.title("{}".format(image[1]))
-        plt.tight_layout()
-    # plt.show()
+    return(x_arr, y_arr)
 
 
 def graphics():
 
     l = []
-    for i in train:
+    for i in y_train:
         if(i[1] == 0):
-            l.append("Pneumonia")
+            l.append("Пневмония")
         else:
-            l.append("Normal")
+            l.append("Норма")
     sns.set_style('darkgrid')
     sns.countplot(l)
 
@@ -72,7 +60,7 @@ def graphics():
     train_loss = history.history['loss']
     val_acc = history.history['val_accuracy']
     val_loss = history.history['val_loss']
-    fig.set_size_inches(20, 10)
+    fig.set_size_inches(2, 1)
 
     ax[0].plot(epochs, train_acc, 'go-',
                label='точность на тренировочной выборке')
@@ -100,32 +88,28 @@ test_path = '../../chest_xray/test'
 val_path = '../../chest_xray/val'
 
 
-val, x_val, y_val = get_images_data(val_path)
-train, x_train, y_train = get_images_data(train_path)
-test, x_test, y_test = get_images_data(test_path)
-#samples(9, test)
+x_val, y_val = get_images_data(val_path)
+x_train, y_train = get_images_data(train_path)
+x_test, y_test = get_images_data(test_path)
+
+
 datagen = ImageDataGenerator(
-    featurewise_center=False,  # set input mean to 0 over the dataset
-    samplewise_center=False,  # set each sample mean to 0
-    featurewise_std_normalization=False,  # divide inputs by std of the dataset
-    samplewise_std_normalization=False,  # divide each input by its std
-    zca_whitening=False,  # apply ZCA whitening
-    # randomly rotate images in the range (degrees, 0 to 180)
+    #случайный поворот изображения
     rotation_range=30,
-    zoom_range=0.2,  # Randomly zoom image
-    # randomly shift images horizontally (fraction of total width)
+    #случайное приближение 
+    zoom_range=0.2, 
+    #смещение по горизонтали 
     width_shift_range=0.1,
-    # randomly shift images vertically (fraction of total height)
+    #смещение по вертикали
     height_shift_range=0.1,
-    horizontal_flip=True,  # randomly flip images
-    vertical_flip=False)  # randomly flip images
-
-
+    #отражение по горизонтали
+    horizontal_flip=True)  
 datagen.fit(x_train)
 
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), strides=1, padding='same', activation='relu', input_shape=(150, 150, 1)))
+model.add(Conv2D(32, (3, 3), strides=1, padding='same',
+                 activation='relu', input_shape=(150, 150, 1)))
 model.add(BatchNormalization())
 model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
@@ -170,8 +154,8 @@ history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs
 
 evaluate = model.evaluate(x_test, y_test)
 
-print("Loss of the model is - ", evaluate[0])
-print("Accuracy of the model is - ",
+print("точность - ",
       evaluate[1]*100, "%")
-model.save('my_model.h5')
+if (evaluate[1]*100 > 91):
+    model.save('my_model.h5')
 graphics()
