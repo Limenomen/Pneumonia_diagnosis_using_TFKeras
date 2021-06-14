@@ -117,7 +117,7 @@ vgg16_net.trainadle = True
 model = Sequential()
 model.add(vgg16_net)
 model.add(Flatten())
-model.add(Dense(units=128, activation='relu'))
+model.add(Dense(units=256, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer="adam", loss='binary_crossentropy',
