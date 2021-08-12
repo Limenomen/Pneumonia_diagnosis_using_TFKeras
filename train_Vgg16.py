@@ -1,14 +1,12 @@
 import numpy as np
 from cv2 import cv2
-import random
 import os
 import matplotlib.pyplot as plt
-import keras
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
+from keras.layers import Dense, Flatten, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 import seaborn as sns
-from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau
 from keras.applications.vgg16 import VGG16
 
 

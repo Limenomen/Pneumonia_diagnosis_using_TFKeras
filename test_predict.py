@@ -20,7 +20,7 @@ params = {'legend.fontsize': 'small',
 plt.rcParams.update(params)
 
 
-def Get_Images_Data(dir):
+def get_Images_Data(dir):
     labels = ['Pneumonia', 'Normal']
     img_size = 150
     data = []
@@ -43,10 +43,10 @@ def Get_Images_Data(dir):
     return(data, x_arr, y_arr)
 
 
-def Samples(data):
+def plot_samples(data):
     for i in range(1, 10):
         image = random.choice(data)
-        image[1] = Class_Name(image[1])
+        image[1] = add_class_name(image[1])
         plt.subplot(3, 3, i)
         plt.xticks([])
         plt.yticks([])
@@ -56,7 +56,7 @@ def Samples(data):
     plt.show()
 
 
-def Class_Name(data):
+def add_class_name(data):
     new_data = []
     for element in data:
         if element == 0 or element == 'Pneumonia':
@@ -66,12 +66,12 @@ def Class_Name(data):
     return new_data
 
 
-def Confusion_Matrix(predictions):
+def confusion_Matrix(predictions):
     m = confusion_matrix(y_test, predictions)
     print(m)
     plot_confusion_matrix(y_test, predictions)
 
-def Predict_Images(predictions):
+def predict_Images(predictions):
     
     correct = []
     incorrect = []
@@ -97,7 +97,7 @@ def Predict_Images(predictions):
 
 
 test_path = '../../chest_xray/test'
-test, x_test, y_test = Get_Images_Data(test_path)
+test, x_test, y_test = get_Images_Data(test_path)
 
 
 model = load_model('my_model.h5')
@@ -105,7 +105,6 @@ model.compile(optimizer="adam", loss='binary_crossentropy',
               metrics=['accuracy'])
 model.summary()
 
-#keras.utils.plot_model(model, show_shapes=True)
 
 evaluate = model.evaluate(x_test, y_test)
 print("Loss of the model is - ", evaluate[0])
@@ -113,10 +112,9 @@ print("Accuracy of the model is - ",
       evaluate[1]*100, "%")
 predictions = model.predict_classes(x_test)
 predictions = predictions.reshape(1, -1)[0]
-predictions = Class_Name(predictions)
+predictions = add_class_name(predictions)
 
-#Confusion_Matrix(predictions)
-Predict_Images(predictions)
-Samples(test)
+predict_Images(predictions)
+plot_samples(test)
 
 print('successful')

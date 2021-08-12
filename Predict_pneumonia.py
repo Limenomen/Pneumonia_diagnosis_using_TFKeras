@@ -1,4 +1,3 @@
-from typing import Text
 from myUI import Ui_MainWindow
 import numpy as np
 from cv2 import cv2
@@ -34,7 +33,7 @@ class mywindow(QtWidgets.QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getOpenFileName(
-            self, "QFileDialog.getOpenFileName()", "", "All Files (*);;Jpg Images (*.jpeg)", options=options)
+            self, "выбор изображения", "", "All Files (*);;Jpg Images (*.jpeg)", options=options)
         pixmap = QtGui.QPixmap(self.fileName)
         pixmap = pixmap.scaled(331, 331, QtCore.Qt.KeepAspectRatio)
         self.ui.label_2.setPixmap(pixmap)

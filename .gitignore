@@ -1,1 +1,4 @@
-vgg16.h5
+other
+.vscode
+__pycache__
+res
