@@ -1,73 +1,85 @@
-import tensorflow as tf
 import numpy as np
 from cv2 import cv2
+import random
 import os
-import PIL
-from tensorflow import keras
 import matplotlib.pyplot as plt
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.layers import Flatten, Conv2D, Activation, Dense, Dropout, MaxPooling2D
 from keras.preprocessing.image import ImageDataGenerator
-from keras import backend as K
 import seaborn as sns
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
+epochs_count = 13
+
 
 def get_images_data(dir):
+    #метки классов
+    labels = ['PNEUMONIA', 'NORMAL']
+    #размер выходного изображения
     img_size = 150
     data = []
     x_arr = []
     y_arr = []
+    #проход по текущей директории
     for label in labels:
+        #путь, где находится текущее изображение
         path = os.path.join(dir, label)
+        #индекс класса
         class_num = labels.index(label)
+        #выбираем изображения, которые лежат в директории, соответствующей данному классу
         for img_path in os.listdir(path):
+            #считывание изображения
             img = cv2.imread(os.path.join(path, img_path),
                              cv2.IMREAD_GRAYSCALE)
+            #изменение размера изображения
             resized_img = cv2.resize(img, (img_size, img_size))
-            data.append([resized_img, class_num])
-    for img, label in data:
-        x_arr.append(img)
-        y_arr.append(label)
+            x_arr.append(resized_img)
+            y_arr.append(class_num)
+    #преобразование в numpy array, нормализация
     x_arr = np.array(x_arr) / 255
     y_arr = np.array(y_arr)
     x_arr = x_arr.reshape(-1, img_size, img_size, 1)
-
-    return(data, x_arr, y_arr)
+    return(x_arr, y_arr)
 
 
 def graphics():
-    epochs = [i for i in range(12)]
+
+    l = []
+    for i in y_train:
+        if(i[1] == 0):
+            l.append("Пневмония")
+        else:
+            l.append("Норма")
+    sns.set_style('darkgrid')
+    sns.countplot(l)
+
+    epochs = [i for i in range(epochs_count)]
     fig, ax = plt.subplots(1, 2)
     train_acc = history.history['accuracy']
     train_loss = history.history['loss']
     val_acc = history.history['val_accuracy']
     val_loss = history.history['val_loss']
-    fig.set_size_inches(20, 10)
+    fig.set_size_inches(2, 1)
 
-    ax[0].plot(epochs, train_acc, 'go-', label='Training Accuracy')
-    ax[0].plot(epochs, val_acc, 'ro-', label='Validation Accuracy')
-    ax[0].set_title('Training & Validation Accuracy')
+    ax[0].plot(epochs, train_acc, 'go-',
+               label='точность на тренировочной выборке')
+    ax[0].plot(epochs, val_acc, 'ro-',
+               label='точность на валидационной выборке')
+    ax[0].set_title('Точность')
     ax[0].legend()
-    ax[0].set_xlabel("Epochs")
-    ax[0].set_ylabel("Accuracy")
+    ax[0].set_xlabel("эпоха")
+    ax[0].set_ylabel("точность")
 
-    ax[1].plot(epochs, train_loss, 'g-o', label='Training Loss')
-    ax[1].plot(epochs, val_loss, 'r-o', label='Validation Loss')
-    ax[1].set_title('Testing Accuracy & Loss')
+    ax[1].plot(epochs, train_loss, 'g-o',
+               label='потери на тренировочной выборке')
+    ax[1].plot(epochs, val_loss, 'r-o',
+               label='потери на валидационной выборке')
+    ax[1].set_title('потери')
     ax[1].legend()
-    ax[1].set_xlabel("Epochs")
-    ax[1].set_ylabel("Training & Validation Loss")
+    ax[1].set_xlabel("эпоха")
+    ax[1].set_ylabel("потери")
     plt.show()
-    l = []
-    for i in train:
-        if(i[1] == 0):
-            l.append("Pneumonia")
-        else:
-            l.append("Normal")
-    sns.set_style('darkgrid')
-    sns.countplot(l)
 
 
 #'Путь, где находятся изображения для датасета'
@@ -75,61 +87,75 @@ train_path = '../../chest_xray/train'
 test_path = '../../chest_xray/test'
 val_path = '../../chest_xray/val'
 
-labels = ['Pneumonia', 'Normal']
 
-val, x_val, y_val = get_images_data(val_path)
-train, x_train, y_train = get_images_data(train_path)
-test, x_test, y_test = get_images_data(test_path)
+x_val, y_val = get_images_data(val_path)
+x_train, y_train = get_images_data(train_path)
+x_test, y_test = get_images_data(test_path)
+
 
 datagen = ImageDataGenerator(
-    featurewise_center=False,  # set input mean to 0 over the dataset
-    samplewise_center=False,  # set each sample mean to 0
-    featurewise_std_normalization=False,  # divide inputs by std of the dataset
-    samplewise_std_normalization=False,  # divide each input by its std
-    zca_whitening=False,  # apply ZCA whitening
-    rotation_range = 30,  # randomly rotate images in the range (degrees, 0 to 180)
-    zoom_range = 0.2, # Randomly zoom image 
-    width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-    height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-    horizontal_flip = True,  # randomly flip images
-    vertical_flip=False)  # randomly flip images
-
-
+    #случайный поворот изображения
+    rotation_range=30,
+    #случайное приближение 
+    zoom_range=0.2, 
+    #смещение по горизонтали 
+    width_shift_range=0.1,
+    #смещение по вертикали
+    height_shift_range=0.1,
+    #отражение по горизонтали
+    horizontal_flip=True)  
 datagen.fit(x_train)
 
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32, (3, 3), strides=1, padding='same',
+                 activation='relu', input_shape=(150, 150, 1)))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
-model.add(Conv2D(32, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
+model.add(Dropout(0.1))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3), strides=1, padding='same', activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
+
+model.add(Conv2D(128, (3, 3), strides=1, padding='same', activation='relu'))
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
+
+model.add(Conv2D(256, (3, 3), strides=1, padding='same', activation='relu'))
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(MaxPool2D((2, 2), strides=2, padding='same'))
 
 model.add(Flatten())
-model.add(Dense(64))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
+model.add(Dense(units=128, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(units=1, activation='sigmoid'))
+model.compile(optimizer="adam", loss='binary_crossentropy',
+              metrics=['accuracy'])
+model.summary()
 
-model.compile(loss="binary_crossentropy",
-              optimizer="rmsprop", metrics=["accuracy"])
+earlystopping = EarlyStopping(monitor='val_loss',
+                              mode='min',
+                              patience=5,
+                              verbose=1)
 
 learning_rate_reduction = ReduceLROnPlateau(
     monitor='val_accuracy', patience=2, verbose=1, factor=0.3, min_lr=0.000001)
 
-history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=12,
+history = model.fit(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs_count,
                     validation_data=datagen.flow(x_val, y_val), callbacks=[learning_rate_reduction])
 
 
-print("Loss of the model is - ", model.evaluate(x_test, y_test)[0])
-print("Accuracy of the model is - ",
-      model.evaluate(x_test, y_test)[1]*100, "%")
+evaluate = model.evaluate(x_test, y_test)
 
+print("точность - ",
+      evaluate[1]*100, "%")
+if (evaluate[1]*100 > 91):
+    model.save('my_model.h5')
 graphics()
