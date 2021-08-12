@@ -1,11 +1,7 @@
-import tensorflow as tf
 import numpy as np
 from cv2 import cv2
 import random
 import os
-import PIL
-from tensorflow import keras
-import keras
 import matplotlib.pyplot as plt
 from keras.models import load_model
 import seaborn as sns
@@ -102,7 +98,7 @@ def Confusion_Matrix(predictions, Test):
 test_path = '../../chest_xray/test'
 test, x_test, y_test = Get_Images_Data(test_path)
 
-model = load_model('my_model.h5')
+model = load_model('my_model_b.h5')
 model.compile(optimizer="adam", loss='binary_crossentropy',
               metrics=['accuracy'])
 model.summary()

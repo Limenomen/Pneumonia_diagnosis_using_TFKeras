@@ -1,14 +1,12 @@
 import numpy as np
 from cv2 import cv2
-import random
 import os
 import matplotlib.pyplot as plt
-import keras
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout, BatchNormalization
+from keras.layers import Dense, Flatten, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 import seaborn as sns
-from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau
 from keras.applications.vgg16 import VGG16
 
 
@@ -117,7 +115,7 @@ vgg16_net.trainadle = True
 model = Sequential()
 model.add(vgg16_net)
 model.add(Flatten())
-model.add(Dense(units=128, activation='relu'))
+model.add(Dense(units=256, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer="adam", loss='binary_crossentropy',
